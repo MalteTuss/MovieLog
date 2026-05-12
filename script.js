@@ -16,6 +16,11 @@ function displayMovies(movies) {
   const container = document.getElementById("results");
   container.innerHTML = "";
 
+  if (!movies || movies.length === 0) {
+    container.innerHTML = "<p>No results found</p>";
+    return;
+  }
+
   movies.forEach(movie => {
     const div = document.createElement("div");
 
