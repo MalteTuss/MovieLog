@@ -12,23 +12,22 @@ async function searchMovies() {
   displayMovies(data.results);
 }
 
-function displayMovies(movies) {
-  const container = document.getElementById("results");
-  container.innerHTML = "";
+async function searchMovies() {
+  console.log("SEARCH CLICKED");
 
-  if (!movies || movies.length === 0) {
-    container.innerHTML = "<p>No results found</p>";
-    return;
-  }
+  const query = document.getElementById("searchInput").value;
 
-  movies.forEach(movie => {
-    const div = document.createElement("div");
+  console.log("QUERY:", query);
 
-    div.innerHTML = `
-      <h3>${movie.title}</h3>
-      <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" />
-    `;
+  const res = await fetch(
+    `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${query}`
+  );
 
-    container.appendChild(div);
-  });
+  console.log("RAW RESPONSE:", res);
+
+  const data = await res.json();
+
+  console.log("DATA:", data);
+
+  displayMovies(data.results);
 }
