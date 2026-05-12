@@ -65,13 +65,16 @@ header {
   box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.2);
 }
 
+/* NYA & BÄTTRE GRID-INSTÄLLNINGAR */
 .movies-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
   max-width: 1400px;
   margin: 0 auto;
   padding: 1rem;
+  justify-content: center;        /* Centrerar innehållet */
+  align-content: start;
 }
 
 .movie {
@@ -80,6 +83,7 @@ header {
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
+  height: 100%;                   /* Jämnare höjd */
 }
 
 .movie:hover {
@@ -117,14 +121,6 @@ header {
   margin-top: 4px;
 }
 
-footer {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: #555;
-  font-size: 0.9rem;
-  margin-top: 3rem;
-}
-
 /* Load more knapp */
 #loadMoreBtn {
   display: none;
@@ -143,4 +139,12 @@ footer {
 #loadMoreBtn:hover {
   background: #b2070f;
   transform: scale(1.05);
+}
+
+footer {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #555;
+  font-size: 0.9rem;
+  margin-top: 3rem;
 }
