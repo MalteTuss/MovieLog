@@ -1,17 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="sv">
 <head>
-  <title>Movie Tracker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Tracker Pro</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <h1>Movie Tracker</h1>
 
-  <input id="searchInput" placeholder="Search movies..." />
-  <button onclick="searchMovies()">Search</button>
+  <div class="search-container">
+    <input id="searchInput" placeholder="Börja skriva en filmtitel..." autocomplete="off" />
+  </div>
 
   <div id="results"></div>
+
+  <div id="pagination-container">
+    <button id="loadMoreBtn" onclick="loadMore()">Ladda fler filmer</button>
+  </div>
 
   <script src="script.js"></script>
 </body>
