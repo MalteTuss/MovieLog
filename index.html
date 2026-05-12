@@ -3,22 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Movie Tracker Pro</title>
+  <title>MovieLog</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 <body>
-
-  <h1>Movie Tracker</h1>
+  <header>
+    <div class="header-content">
+      <h1><i class="fas fa-film"></i> MovieLog</h1>
+      <p>Din personliga filmlogg</p>
+    </div>
+  </header>
 
   <div class="search-container">
-    <input id="searchInput" placeholder="Börja skriva en filmtitel..." autocomplete="off" />
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input id="searchInput" type="text" placeholder="Sök filmer... (t.ex. Inception)" autocomplete="off">
+    </div>
   </div>
 
-  <div id="results"></div>
+  <div id="results" class="movies-grid"></div>
 
   <div id="pagination-container">
-    <button id="loadMoreBtn" onclick="loadMore()">Ladda fler filmer</button>
+    <button id="loadMoreBtn" onclick="loadMore()">
+      <i class="fas fa-chevron-down"></i> Ladda fler filmer
+    </button>
   </div>
+
+  <footer>
+    <p>MovieLog • Byggd med kärlek och TMDB API</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
