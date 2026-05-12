@@ -1,105 +1,146 @@
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #141414; /* Mörkt tema */
-  color: white;
+* {
   margin: 0;
-  padding: 20px;
-  text-align: center;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-h1 {
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0f0f0f;
+  color: #fff;
+  line-height: 1.6;
+}
+
+header {
+  background: linear-gradient(180deg, #1a1a1a, #0f0f0f);
+  padding: 2rem 1rem;
+  text-align: center;
+  border-bottom: 1px solid #e50914;
+}
+
+.header-content h1 {
+  font-size: 3.5rem;
   color: #e50914;
-  font-size: 3rem;
-  margin-bottom: 30px;
+  margin-bottom: 0.5rem;
+}
+
+.header-content p {
+  color: #aaa;
+  font-size: 1.2rem;
 }
 
 .search-container {
-  margin-bottom: 40px;
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
 }
 
-input {
-  padding: 15px 25px;
+.search-box {
+  position: relative;
+}
+
+.search-box i {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+  font-size: 1.3rem;
+}
+
+#searchInput {
   width: 100%;
-  max-width: 400px;
-  border-radius: 30px;
-  border: none;
-  background: #333;
-  color: white;
+  padding: 18px 20px 18px 55px;
   font-size: 1.1rem;
+  background: #1f1f1f;
+  border: 2px solid #333;
+  border-radius: 50px;
+  color: white;
   outline: none;
-  transition: 0.3s;
+  transition: all 0.3s;
 }
 
-input:focus {
-  background: #444;
-  box-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+#searchInput:focus {
+  border-color: #e50914;
+  box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.2);
 }
 
-#results {
+.movies-grid {
   display: grid;
-  /* Skapar kolumner automatiskt beroende på skärmbredd */
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 30px;
-  max-width: 1200px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 25px;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 1rem;
 }
 
 .movie {
-  background: #1f1f1f;
-  border-radius: 10px;
+  background: #1a1a1a;
+  border-radius: 12px;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  text-align: left;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .movie:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-  cursor: pointer;
+  transform: translateY(-12px) scale(1.03);
+  box-shadow: 0 20px 30px rgba(229, 9, 20, 0.3);
 }
 
 .movie img {
   width: 100%;
-  display: block;
   aspect-ratio: 2/3;
   object-fit: cover;
+  display: block;
 }
 
 .movie-info {
-  padding: 15px;
+  padding: 14px;
 }
 
 .movie-info h3 {
-  margin: 0;
-  font-size: 1rem;
+  font-size: 1.05rem;
+  margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.movie-info span {
-  color: #777;
+.movie-info .year {
+  color: #888;
+  font-size: 0.95rem;
+}
+
+.movie-info .rating {
+  color: #ffd700;
+  font-size: 0.95rem;
+  margin-top: 4px;
+}
+
+footer {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #555;
   font-size: 0.9rem;
+  margin-top: 3rem;
 }
 
-#pagination-container {
-  margin: 50px 0;
-}
-
+/* Load more knapp */
 #loadMoreBtn {
-  display: none; /* Dold som standard */
-  margin: 0 auto;
-  padding: 12px 30px;
+  display: none;
+  margin: 40px auto;
+  padding: 14px 40px;
   background: #e50914;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 50px;
+  font-size: 1.1rem;
   font-weight: bold;
-  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: 0.3s;
 }
 
 #loadMoreBtn:hover {
   background: #b2070f;
+  transform: scale(1.05);
 }
