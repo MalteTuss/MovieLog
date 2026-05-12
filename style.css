@@ -1,43 +1,105 @@
 body {
-  font-family: Arial;
-  background: #111;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #141414; /* Mörkt tema */
   color: white;
-  text-align: center;
   margin: 0;
   padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  color: #e50914;
+  font-size: 3rem;
+  margin-bottom: 30px;
+}
+
+.search-container {
+  margin-bottom: 40px;
 }
 
 input {
-  padding: 10px;
-  width: 220px;
+  padding: 15px 25px;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 30px;
   border: none;
-  border-radius: 5px;
+  background: #333;
+  color: white;
+  font-size: 1.1rem;
+  outline: none;
+  transition: 0.3s;
 }
 
-button {
-  padding: 10px 15px;
-  cursor: pointer;
-  margin-left: 5px;
-  border: none;
-  border-radius: 5px;
-  background: #e50914;
-  color: white;
+input:focus {
+  background: #444;
+  box-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
 }
 
 #results {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
+  /* Skapar kolumner automatiskt beroende på skärmbredd */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .movie {
-  background: #222;
-  padding: 10px;
+  background: #1f1f1f;
   border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: left;
+}
+
+.movie:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+  cursor: pointer;
 }
 
 .movie img {
   width: 100%;
-  border-radius: 10px;
+  display: block;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+}
+
+.movie-info {
+  padding: 15px;
+}
+
+.movie-info h3 {
+  margin: 0;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-info span {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+#pagination-container {
+  margin: 50px 0;
+}
+
+#loadMoreBtn {
+  display: none; /* Dold som standard */
+  margin: 0 auto;
+  padding: 12px 30px;
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#loadMoreBtn:hover {
+  background: #b2070f;
 }
