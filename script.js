@@ -1,21 +1,48 @@
 const API_KEY = "d133f3d52325736c0359bfd16cf21ca0";
 
 async function searchMovies() {
-  console.log("SEARCH CLICKED");
+  const query = document.getElementById("searchInput").value.trim();
 
-  const query = document.getElementById("searchInput").value;
+  if (!query) return;
 
-  console.log("QUERY:", query);
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`
+    );
 
-  const res = await fetch(
-    `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${query}`
-  );
+    const data = await res.json();
 
-  console.log("RAW RESPONSE:", res);
+    if (!data.results) {
+      console.error("No results found:", data);
+      return;
+    }
 
-  const data = await res.json();
+    displayMovies(data.results);
 
-  console.log("DATA:", data);
+  } catch (error) {
+    console.error("API error:", error);
+  }
+}
 
-  displayMovies(data.results);
+function displayMovies(movies) {
+  const container = document.getElementById("results");
+
+  container.innerHTML = "";
+
+  movies.forEach(movie => {
+    const card = document.createElement("div");
+    card.classList.add("movie");
+
+    card.innerHTML = `
+      <img src="${
+        movie.poster_path
+          ? "https://image.tmdb.org/t/p/w300" + movie.poster_path
+          : "https://via.placeholder.com/300x450?text=No+Image"
+      }" />
+      <h3>${movie.title}</h3>
+      <p>${movie.release_date || "Unknown year"}</p>
+    `;
+
+    container.appendChild(card);
+  });
 }
