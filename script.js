@@ -3,6 +3,7 @@ const API_KEY = "d133f3d52325736c0359bfd16cf21ca0";
 let currentPage = 1;
 let currentQuery = "";
 let debounceTimer;
+let currentView = "search"; // Tracks if we are in 'search', 'watched', 'watchlist', or 'favorites'
 
 const searchInput = document.getElementById("searchInput");
 const resultsContainer = document.getElementById("results");
@@ -18,6 +19,7 @@ searchInput.addEventListener("input", (e) => {
     if (query.length >= 2) {
       currentQuery = query;
       currentPage = 1;
+      currentView = "search";
       fetchMovies(true);
     } else if (query.length === 0) {
       resultsContainer.innerHTML = "";
@@ -77,9 +79,16 @@ function loadMore() {
 // --- DISPLAY FUNCTIONS ---
 
 function displayMovies(movies) {
+  // Helper to check if a movie is in a local list
+  const isInList = (movieId, listName) => {
+    const list = JSON.parse(localStorage.getItem(listName)) || [];
+    return list.some(m => m.id === movieId);
+  };
+
   movies.forEach(movie => {
     const card = document.createElement("div");
     card.classList.add("movie");
+    card.setAttribute("data-id", movie.id); // Useful for removing from DOM
 
     const poster = movie.poster_path
       ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
@@ -88,15 +97,20 @@ function displayMovies(movies) {
     const year = movie.release_date ? movie.release_date.split("-")[0] : "????";
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "?";
 
+    // Determine active classes
+    const watchedClass = isInList(movie.id, "watched") ? "active" : "";
+    const watchlistClass = isInList(movie.id, "watchlist") ? "active" : "";
+    const favClass = isInList(movie.id, "favorites") ? "active" : "";
+
     card.innerHTML = `
       <img src="${poster}" alt="${movie.title}" loading="lazy">
       <div class="movie-info">
         <h3>${movie.title}</h3>
         <div class="year">${year} • <span class="rating">★ ${rating}</span></div>
         <div class="actions">
-          <button class="btn-save" data-type="watched">✅ Watched</button>
-          <button class="btn-save" data-type="watchlist">⏳ Watchlist</button>
-          <button class="btn-save" data-type="favorites">❤️ Favorite</button>
+          <button class="btn-save ${watchedClass}" data-type="watched">✅ Watched</button>
+          <button class="btn-save ${watchlistClass}" data-type="watchlist">⏳ Watchlist</button>
+          <button class="btn-save ${favClass}" data-type="favorites">❤️ Favorite</button>
         </div>
       </div>
     `;
@@ -105,7 +119,7 @@ function displayMovies(movies) {
       button.addEventListener("click", (e) => {
         e.stopPropagation();
         const listType = button.getAttribute("data-type");
-        toggleMovieInList(movie, listType);
+        toggleMovieInList(movie, listType, button, card);
       });
     });
 
@@ -115,13 +129,26 @@ function displayMovies(movies) {
 
 // --- SAVE LOGIC (localStorage) ---
 
-function toggleMovieInList(movie, listName) {
+function toggleMovieInList(movie, listName, button, card) {
   let list = JSON.parse(localStorage.getItem(listName)) || [];
   const index = list.findIndex(m => m.id === movie.id);
 
   if (index > -1) {
+    // Remove from list
     list.splice(index, 1);
+    button.classList.remove("active");
+    
+    // If we are currently viewing this specific list, remove the card from UI immediately
+    if (currentView === listName) {
+      card.remove();
+      // If list becomes empty, show message
+      if (list.length === 0) {
+        resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${listName}</h2>
+                                      <p style="grid-column: 1/-1; text-align: center; color: #ccc;">Your list is currently empty.</p>`;
+      }
+    }
   } else {
+    // Add to list
     list.push({
       id: movie.id,
       title: movie.title,
@@ -129,6 +156,7 @@ function toggleMovieInList(movie, listName) {
       release_date: movie.release_date,
       vote_average: movie.vote_average
     });
+    button.classList.add("active");
   }
 
   localStorage.setItem(listName, JSON.stringify(list));
@@ -137,6 +165,7 @@ function toggleMovieInList(movie, listName) {
 // --- SHOW LISTS ---
 
 function showMyList(listName) {
+  currentView = listName; // Update state
   const savedMovies = JSON.parse(localStorage.getItem(listName)) || [];
   
   resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${listName}</h2>`;
