@@ -29,7 +29,7 @@ async function fetchMovies(isNewSearch = false) {
     let movies = [];
 
     while (movies.length < 20) {
-      const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
+      const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}&include_adult=true`;
 
       const res = await fetch(url);
       const data = await res.json();
