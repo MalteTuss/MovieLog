@@ -152,3 +152,10 @@ footer {
   font-size: 0.9rem;
   margin-top: 3rem;
 }
+
+footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
