@@ -59,9 +59,9 @@ function displayMovies(movies) {
     const card = document.createElement("div");
     card.classList.add("movie");
 
-    const poster = movie.poster_path 
-      ? `https://image.tmdb.org/t/p/w342${movie.poster_path}` 
-      : "https://via.placeholder.com/300x450/1a1a1a/666?text=Ingen+bild";
+    const poster = movie.poster_path
+      ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
+      : "https://dummyimage.com/300x450/1a1a1a/666666&text=Ingen+bild";
 
     const year = movie.release_date ? movie.release_date.split("-")[0] : "????";
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "?";
