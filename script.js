@@ -26,24 +26,36 @@ searchInput.addEventListener("input", (e) => {
 
 async function fetchMovies(isNewSearch = false) {
   try {
-    const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
-    const res = await fetch(url);
-    const data = await res.json();
+    let movies = [];
 
-console.log("Page:", currentPage);
-console.log("Antal filmer:", data.results.length);
-console.log(data.results);
+    while (movies.length < 20) {
+      const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
 
-    if (isNewSearch) resultsContainer.innerHTML = "";
+      const res = await fetch(url);
+      const data = await res.json();
 
-    if (data.results && data.results.length > 0) {
-      displayMovies(data.results);
-      
-      loadMoreBtn.style.display = data.total_pages > currentPage ? "block" : "none";
-    } else if (isNewSearch) {
-      resultsContainer.innerHTML = `<p style="text-align:center; grid-column:1/-1; padding:3rem;">Inga filmer hittades för "${currentQuery}"</p>`;
-      loadMoreBtn.style.display = "none";
+      console.log("Page:", currentPage);
+      console.log("Antal filmer:", data.results.length);
+
+      movies = [...movies, ...data.results];
+
+      if (currentPage >= data.total_pages) break;
+
+      if (movies.length < 20) {
+        currentPage++;
+      }
     }
+
+    movies = movies.slice(0, 20);
+
+    if (isNewSearch) {
+      resultsContainer.innerHTML = "";
+    }
+
+    displayMovies(movies);
+
+    loadMoreBtn.style.display = "block";
+
   } catch (error) {
     console.error("Fel:", error);
   }
