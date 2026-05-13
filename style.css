@@ -72,8 +72,7 @@ header {
   max-width: 1480px;
   margin: 0 auto;
   padding: 1rem;
-  justify-content: center;
-  align-items: start;           
+  align-items: start;
 }
 
 .movie {
@@ -96,12 +95,11 @@ header {
   aspect-ratio: 2 / 3;
   object-fit: cover;
   display: block;
-  flex-shrink: 0;
 }
 
 .movie-info {
   padding: 14px;
-  flex-grow: 1;                 
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -125,7 +123,6 @@ header {
   font-size: 0.95rem;
 }
 
-
 #loadMoreBtn {
   display: none;
   margin: 40px auto;
@@ -145,17 +142,38 @@ header {
   transform: scale(1.05);
 }
 
-footer {
+/* 🟢 TMDB SECTION */
+.tmdb-credit {
+  margin-top: 60px;
   text-align: center;
-  padding: 3rem 1rem;
-  color: #555;
-  font-size: 0.9rem;
-  margin-top: 3rem;
-}
 
-footer {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
+
+  opacity: 0.8;
+}
+
+.tmdb-credit p {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.tmdb-credit img {
+  height: 28px;
+  transition: 0.2s;
+}
+
+.tmdb-credit img:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+footer {
+  text-align: center;
+  padding: 2rem;
+  color: #555;
+  font-size: 0.9rem;
+  margin-top: 2rem;
 }
