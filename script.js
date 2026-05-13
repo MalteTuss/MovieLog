@@ -8,6 +8,9 @@ const searchInput = document.getElementById("searchInput");
 const resultsContainer = document.getElementById("results");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 
+/* -----------------------------
+   SEARCH INPUT (DEBOUNCE)
+----------------------------- */
 searchInput.addEventListener("input", (e) => {
   const query = e.target.value.trim();
 
@@ -25,10 +28,14 @@ searchInput.addEventListener("input", (e) => {
   }, 400);
 });
 
+/* -----------------------------
+   FETCH MOVIES (STABLE + 20 VALID POSTERS)
+----------------------------- */
 async function fetchMovies(isNewSearch = false) {
   try {
     let movies = [];
     let tempPage = currentPage;
+    let totalPages = Infinity;
 
     while (movies.length < 20) {
       const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${tempPage}&include_adult=true`;
@@ -43,14 +50,16 @@ async function fetchMovies(isNewSearch = false) {
 
       movies = movies.concat(validMovies);
 
-      if (tempPage >= data.total_pages) break;
+      totalPages = data.total_pages;
+
+      if (tempPage >= totalPages) break;
 
       tempPage++;
     }
 
     movies = movies.slice(0, 20);
 
-    // 🔥 VIKTIGT: uppdatera global page korrekt
+    // uppdatera global page korrekt
     currentPage = tempPage + 1;
 
     if (isNewSearch) {
@@ -60,17 +69,23 @@ async function fetchMovies(isNewSearch = false) {
     displayMovies(movies);
 
     loadMoreBtn.style.display =
-      currentPage <= data.total_pages ? "block" : "none";
+      currentPage <= totalPages ? "block" : "none";
 
   } catch (error) {
     console.error("Fel:", error);
   }
 }
 
+/* -----------------------------
+   LOAD MORE
+----------------------------- */
 function loadMore() {
   fetchMovies(false);
 }
 
+/* -----------------------------
+   DISPLAY MOVIES
+----------------------------- */
 function displayMovies(movies) {
   movies.forEach(movie => {
     const card = document.createElement("div");
