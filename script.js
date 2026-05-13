@@ -3,78 +3,73 @@ const API_KEY = "d133f3d52325736c0359bfd16cf21ca0";
 let currentPage = 1;
 let currentQuery = "";
 let debounceTimer;
+let totalLoaded = 0; // Räknare för totalt antal filmer
 
 const searchInput = document.getElementById("searchInput");
 const resultsContainer = document.getElementById("results");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 
+// Skapa ett element för att visa statistiken (om det inte redan finns i din HTML)
+let statsDisplay = document.getElementById("statsDisplay");
+if (!statsDisplay) {
+  statsDisplay = document.createElement("div");
+  statsDisplay.id = "statsDisplay";
+  statsDisplay.style.margin = "10px";
+  statsDisplay.style.fontWeight = "bold";
+  document.body.insertBefore(statsDisplay, resultsContainer);
+}
+
 searchInput.addEventListener("input", (e) => {
   const query = e.target.value.trim();
-
   clearTimeout(debounceTimer);
 
   debounceTimer = setTimeout(() => {
     if (query.length >= 2) {
       currentQuery = query;
       currentPage = 1;
+      totalLoaded = 0; // Nollställ räknaren vid ny sökning
       fetchMovies(true);
     } else if (query.length === 0) {
       resultsContainer.innerHTML = "";
       loadMoreBtn.style.display = "none";
+      totalLoaded = 0;
+      updateStats();
     }
   }, 400);
 });
 
 async function fetchMovies(isNewSearch = false) {
   try {
+    const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}&include_adult=true`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
     if (isNewSearch) {
       resultsContainer.innerHTML = "";
-      currentPage = 1;
     }
 
-    let moviesToDisplay = [];
-    const targetAmount = 20; // Hur många filmer vi vill visa per "laddning"
-
-    // Loopa tills vi har 20 filmer med posters ELLER slut på sidor
-    while (moviesToDisplay.length < targetAmount) {
-      const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}&include_adult=true`;
-      
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (!data.results || data.results.length === 0) break;
-
-      // Filtrera fram filmer som HAR poster
-      const filtered = data.results.filter(m => m.poster_path);
-      
-      // Lägg till de filtrerade filmerna i vår temporära lista
-      moviesToDisplay = [...moviesToDisplay, ...filtered];
-
-      // Kolla om vi nått sista sidan i API:et
-      if (currentPage >= data.total_pages) {
-        loadMoreBtn.style.display = "none";
-        break;
-      } else {
-        loadMoreBtn.style.display = "block";
-      }
-
-      // Om vi inte har 20 filmer än, gå till nästa sida direkt
-      if (moviesToDisplay.length < targetAmount) {
-        currentPage++;
-      }
-    }
-
-    // Om vi fick fler än 20 (t.ex. 25), ta bara de första 20
-    // De överskjutande sparas inte, vilket är enklast för att hålla koden ren
-    const finalBatch = moviesToDisplay.slice(0, targetAmount);
+    // Vi tar ALLA filmer nu, även de utan bild
+    const movies = data.results;
     
-    console.log("Visar antal filmer:", finalBatch.length, "Använt sidnummer upp till:", currentPage);
-    
-    displayMovies(finalBatch);
+    // Uppdatera räknaren
+    totalLoaded += movies.length;
+    updateStats();
+
+    displayMovies(movies);
+
+    // Visa/dölj "Ladda mer" baserat på om det finns fler sidor
+    loadMoreBtn.style.display = (currentPage < data.total_pages) ? "block" : "none";
+
+    console.log(`Laddat sida ${currentPage}. Filmer på denna sida: ${movies.length}. Totalt: ${totalLoaded}`);
 
   } catch (error) {
-    console.error("Fel vid hämtning:", error);
+    console.error("Fel:", error);
   }
+}
+
+function updateStats() {
+  statsDisplay.innerText = `Totalt antal filmer laddade: ${totalLoaded}`;
 }
 
 function loadMore() {
@@ -87,17 +82,13 @@ function displayMovies(movies) {
     const card = document.createElement("div");
     card.classList.add("movie");
 
+    // Om poster_path saknas, använd en snygg placeholder
     const poster = movie.poster_path
       ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
-      : "https://dummyimage.com/300x450/1a1a1a/666666&text=Ingen+bild";
+      : "https://via.placeholder.com/342x513?text=Bild+saknas"; // Din custom placeholder
 
-    const year = movie.release_date
-      ? movie.release_date.split("-")[0]
-      : "????";
-
-    const rating = movie.vote_average
-      ? movie.vote_average.toFixed(1)
-      : "?";
+    const year = movie.release_date ? movie.release_date.split("-")[0] : "????";
+    const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "?";
 
     card.innerHTML = `
       <img src="${poster}" alt="${movie.title}" loading="lazy">
