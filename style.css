@@ -29,7 +29,6 @@ header {
   font-size: 1.2rem;
 }
 
-/* --- NY SEKTION: NAVIGERINGS-KNAPPAR --- */
 .nav-buttons {
   display: flex;
   justify-content: center;
@@ -47,6 +46,7 @@ header {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s ease;
+  font-size: 0.9rem;
 }
 
 .nav-buttons button:hover {
@@ -91,7 +91,6 @@ header {
   box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.2);
 }
 
-/* MOVIE GRID */
 .movies-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 260px);
@@ -102,7 +101,6 @@ header {
   padding: 1rem;
 }
 
-/* MOVIE CARD */
 .movie {
   background: #1a1a1a;
   border-radius: 12px;
@@ -129,7 +127,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex-grow: 1; /* Gör att info-delen tar upp resten av kortet */
+  flex-grow: 1;
 }
 
 .movie-info h3 {
@@ -151,13 +149,12 @@ header {
   font-size: 0.95rem;
 }
 
-/* --- NY SEKTION: KNAPPAR PÅ KORTET --- */
 .actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 5px;
-  margin-top: auto; /* Trycker ner knapparna till botten */
-  padding-top: 10px;
+  margin-top: auto;
+  padding: 10px 14px 14px;
 }
 
 .btn-save {
@@ -166,7 +163,7 @@ header {
   border: none;
   padding: 8px 2px;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   cursor: pointer;
   transition: background 0.2s;
   display: flex;
@@ -179,7 +176,6 @@ header {
   background: #444;
 }
 
-/* Specifik färg för favorithjärtat vid hover */
 .btn-save[data-type="favorites"]:hover {
   background: #e50914;
 }
@@ -216,11 +212,6 @@ header {
 .tmdb-credit p {
   font-size: 0.85rem;
   color: #777;
-}
-
-.tmdb-credit img {
-  height: 14px;
-  transition: 0.2s;
 }
 
 footer {
