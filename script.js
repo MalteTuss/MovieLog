@@ -3,11 +3,30 @@ const API_KEY = "d133f3d52325736c0359bfd16cf21ca0";
 let currentPage = 1;
 let currentQuery = "";
 let debounceTimer;
-let currentView = "search"; // Tracks if we are in 'search', 'watched', 'watchlist', or 'favorites'
+let currentView = "search";
 
 const searchInput = document.getElementById("searchInput");
 const resultsContainer = document.getElementById("results");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
+
+// --- NAVIGATION HELPERS ---
+
+function setActiveTab(clickedButton) {
+  // Remove 'active' class from all nav buttons
+  document.querySelectorAll('.nav-buttons button').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  // Add 'active' class to the clicked button
+  clickedButton.classList.add('active');
+}
+
+function goHome(button) {
+  setActiveTab(button);
+  currentView = "search";
+  searchInput.value = "";
+  resultsContainer.innerHTML = "";
+  loadMoreBtn.style.display = "none";
+}
 
 // --- EVENT LISTENERS ---
 
@@ -20,6 +39,8 @@ searchInput.addEventListener("input", (e) => {
       currentQuery = query;
       currentPage = 1;
       currentView = "search";
+      // Auto-set the Search tab as active if the user types
+      setActiveTab(document.getElementById('btn-search'));
       fetchMovies(true);
     } else if (query.length === 0) {
       resultsContainer.innerHTML = "";
@@ -79,7 +100,6 @@ function loadMore() {
 // --- DISPLAY FUNCTIONS ---
 
 function displayMovies(movies) {
-  // Helper to check if a movie is in a local list
   const isInList = (movieId, listName) => {
     const list = JSON.parse(localStorage.getItem(listName)) || [];
     return list.some(m => m.id === movieId);
@@ -88,7 +108,6 @@ function displayMovies(movies) {
   movies.forEach(movie => {
     const card = document.createElement("div");
     card.classList.add("movie");
-    card.setAttribute("data-id", movie.id); // Useful for removing from DOM
 
     const poster = movie.poster_path
       ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
@@ -97,7 +116,6 @@ function displayMovies(movies) {
     const year = movie.release_date ? movie.release_date.split("-")[0] : "????";
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "?";
 
-    // Determine active classes
     const watchedClass = isInList(movie.id, "watched") ? "active" : "";
     const watchlistClass = isInList(movie.id, "watchlist") ? "active" : "";
     const favClass = isInList(movie.id, "favorites") ? "active" : "";
@@ -127,28 +145,23 @@ function displayMovies(movies) {
   });
 }
 
-// --- SAVE LOGIC (localStorage) ---
+// --- SAVE LOGIC ---
 
 function toggleMovieInList(movie, listName, button, card) {
   let list = JSON.parse(localStorage.getItem(listName)) || [];
   const index = list.findIndex(m => m.id === movie.id);
 
   if (index > -1) {
-    // Remove from list
     list.splice(index, 1);
     button.classList.remove("active");
-    
-    // If we are currently viewing this specific list, remove the card from UI immediately
     if (currentView === listName) {
       card.remove();
-      // If list becomes empty, show message
       if (list.length === 0) {
         resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${listName}</h2>
                                       <p style="grid-column: 1/-1; text-align: center; color: #ccc;">Your list is currently empty.</p>`;
       }
     }
   } else {
-    // Add to list
     list.push({
       id: movie.id,
       title: movie.title,
@@ -164,8 +177,9 @@ function toggleMovieInList(movie, listName, button, card) {
 
 // --- SHOW LISTS ---
 
-function showMyList(listName) {
-  currentView = listName; // Update state
+function showMyList(listName, button) {
+  setActiveTab(button); // Highlight the selected tab
+  currentView = listName;
   const savedMovies = JSON.parse(localStorage.getItem(listName)) || [];
   
   resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${listName}</h2>`;
@@ -181,3 +195,4 @@ function showMyList(listName) {
 
 window.showMyList = showMyList;
 window.loadMore = loadMore;
+window.goHome = goHome;
