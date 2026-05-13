@@ -8,9 +8,6 @@ const searchInput = document.getElementById("searchInput");
 const resultsContainer = document.getElementById("results");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 
-/* -----------------------------
-   SEARCH INPUT (DEBOUNCE)
------------------------------ */
 searchInput.addEventListener("input", (e) => {
   const query = e.target.value.trim();
 
@@ -28,39 +25,17 @@ searchInput.addEventListener("input", (e) => {
   }, 400);
 });
 
-/* -----------------------------
-   FETCH MOVIES (STABLE + 20 VALID POSTERS)
------------------------------ */
 async function fetchMovies(isNewSearch = false) {
   try {
-    let movies = [];
-    let tempPage = currentPage;
-    let totalPages = Infinity;
+    const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}&include_adult=true`;
 
-    while (movies.length < 20) {
-      const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${tempPage}&include_adult=true`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-      const res = await fetch(url);
-      const data = await res.json();
+    console.log("Page:", currentPage);
+    console.log("Antal filmer:", data.results.length);
 
-      console.log("Page:", tempPage);
-      console.log("Antal filmer:", data.results.length);
-
-      const validMovies = data.results.filter(m => m.poster_path);
-
-      movies = movies.concat(validMovies);
-
-      totalPages = data.total_pages;
-
-      if (tempPage >= totalPages) break;
-
-      tempPage++;
-    }
-
-    movies = movies.slice(0, 20);
-
-    // uppdatera global page korrekt
-    currentPage = tempPage + 1;
+    const movies = data.results.filter(m => m.poster_path);
 
     if (isNewSearch) {
       resultsContainer.innerHTML = "";
@@ -69,23 +44,18 @@ async function fetchMovies(isNewSearch = false) {
     displayMovies(movies);
 
     loadMoreBtn.style.display =
-      currentPage <= totalPages ? "block" : "none";
+      currentPage < data.total_pages ? "block" : "none";
 
   } catch (error) {
     console.error("Fel:", error);
   }
 }
 
-/* -----------------------------
-   LOAD MORE
------------------------------ */
 function loadMore() {
+  currentPage++;
   fetchMovies(false);
 }
 
-/* -----------------------------
-   DISPLAY MOVIES
------------------------------ */
 function displayMovies(movies) {
   movies.forEach(movie => {
     const card = document.createElement("div");
