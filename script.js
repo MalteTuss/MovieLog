@@ -30,6 +30,10 @@ async function fetchMovies(isNewSearch = false) {
     const res = await fetch(url);
     const data = await res.json();
 
+console.log("Page:", currentPage);
+console.log("Antal filmer:", data.results.length);
+console.log(data.results);
+
     if (isNewSearch) resultsContainer.innerHTML = "";
 
     if (data.results && data.results.length > 0) {
