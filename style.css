@@ -49,10 +49,13 @@ header {
   font-size: 0.9rem;
 }
 
-.nav-buttons button:hover {
+/* Hover and Active state for the Navigation Tabs */
+.nav-buttons button:hover,
+.nav-buttons button.active {
   background: #e50914;
   border-color: #e50914;
-  transform: translateY(-2px);
+  transform: translateY(-3px); /* Stays lifted when active */
+  box-shadow: 0 4px 10px rgba(229, 9, 20, 0.4);
 }
 
 .search-container {
@@ -172,9 +175,8 @@ header {
   gap: 2px;
 }
 
-/* THE GREEN ACTIVE STATE */
 .btn-save.active {
-  background: #2e7d32; /* Nice green */
+  background: #2e7d32;
   color: white;
   border-color: #4caf50;
   box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
@@ -182,10 +184,6 @@ header {
 
 .btn-save:hover {
   background: #444;
-}
-
-.btn-save.active:hover {
-  background: #1b5e20;
 }
 
 #loadMoreBtn {
@@ -215,11 +213,6 @@ header {
   gap: 12px;
   text-align: center;
   opacity: 0.8;
-}
-
-.tmdb-credit p {
-  font-size: 0.85rem;
-  color: #777;
 }
 
 footer {
