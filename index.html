@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,39 +13,35 @@
   <header>
     <div class="header-content">
       <h1><i class="fas fa-film"></i> MovieLog</h1>
-      <p>Din personliga filmlogg</p>
+      <p>Your personal movie diary</p>
     </div>
 
-    <!-- NYTT: Navigeringsknappar för att se dina listor -->
     <div class="nav-buttons">
-      <button onclick="location.reload()"><i class="fas fa-search"></i> Sök</button>
-      <button onclick="showMyList('watched')"><i class="fas fa-check"></i> Sett</button>
-      <button onclick="showMyList('watchlist')"><i class="fas fa-clock"></i> Vill se</button>
-      <button onclick="showMyList('favorites')"><i class="fas fa-heart"></i> Favoriter</button>
+      <button onclick="location.reload()"><i class="fas fa-search"></i> Search</button>
+      <button onclick="showMyList('watched')"><i class="fas fa-check"></i> Watched</button>
+      <button onclick="showMyList('watchlist')"><i class="fas fa-clock"></i> Watchlist</button>
+      <button onclick="showMyList('favorites')"><i class="fas fa-heart"></i> Favorites</button>
     </div>
   </header>
 
   <div class="search-container">
     <div class="search-box">
       <i class="fas fa-search"></i>
-      <input id="searchInput" type="text" placeholder="Sök filmer..." autocomplete="off">
+      <input id="searchInput" type="text" placeholder="Search movies..." autocomplete="off">
     </div>
   </div>
 
-  <!-- Här visas antingen sökresultat eller dina sparade listor -->
   <div id="results" class="movies-grid"></div>
 
   <div id="pagination-container">
     <button id="loadMoreBtn" onclick="loadMore()">
-      <i class="fas fa-chevron-down"></i> Ladda fler filmer
+      <i class="fas fa-chevron-down"></i> Load More
     </button>
   </div>
 
   <div class="tmdb-credit">
     <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
-
     <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">
-      <!-- Se till att sökvägen till loggan stämmer, annars kan du använda en CDN-länk -->
       <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" alt="TMDB Logo" style="width: 100px;">
     </a>
   </div>
