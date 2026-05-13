@@ -26,7 +26,7 @@ searchInput.addEventListener("input", (e) => {
   }, 400);
 });
 
-// --- API-FUNKTIONER ---
+// --- API FUNCTIONS ---
 
 async function fetchMovies(isNewSearch = false) {
   try {
@@ -65,7 +65,7 @@ async function fetchMovies(isNewSearch = false) {
     displayMovies(finalBatch);
 
   } catch (error) {
-    console.error("Fel vid hämtning:", error);
+    console.error("Error fetching movies:", error);
   }
 }
 
@@ -74,7 +74,7 @@ function loadMore() {
   fetchMovies(false);
 }
 
-// --- VISNINGS-FUNKTIONER ---
+// --- DISPLAY FUNCTIONS ---
 
 function displayMovies(movies) {
   movies.forEach(movie => {
@@ -83,28 +83,27 @@ function displayMovies(movies) {
 
     const poster = movie.poster_path
       ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
-      : "https://dummyimage.com/300x450/1a1a1a/666666&text=Ingen+bild";
+      : "https://dummyimage.com/300x450/1a1a1a/666666&text=No+Image";
 
     const year = movie.release_date ? movie.release_date.split("-")[0] : "????";
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "?";
 
-    // Vi skapar knappar med data-attribut för att undvika problem med JSON i strängar
     card.innerHTML = `
       <img src="${poster}" alt="${movie.title}" loading="lazy">
       <div class="movie-info">
         <h3>${movie.title}</h3>
         <div class="year">${year} • <span class="rating">★ ${rating}</span></div>
         <div class="actions">
-          <button class="btn-save" data-type="watched">✅ Sett</button>
-          <button class="btn-save" data-type="watchlist">⏳ Vill se</button>
-          <button class="btn-save" data-type="favorites">❤️ Favorit</button>
+          <button class="btn-save" data-type="watched">✅ Watched</button>
+          <button class="btn-save" data-type="watchlist">⏳ Watchlist</button>
+          <button class="btn-save" data-type="favorites">❤️ Favorite</button>
         </div>
       </div>
     `;
 
-    // Lägg till klick-event på knapparna i kortet
     card.querySelectorAll(".btn-save").forEach(button => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation();
         const listType = button.getAttribute("data-type");
         toggleMovieInList(movie, listType);
       });
@@ -114,7 +113,7 @@ function displayMovies(movies) {
   });
 }
 
-// --- LOGIK FÖR ATT SPARA (localStorage) ---
+// --- SAVE LOGIC (localStorage) ---
 
 function toggleMovieInList(movie, listName) {
   let list = JSON.parse(localStorage.getItem(listName)) || [];
@@ -122,9 +121,7 @@ function toggleMovieInList(movie, listName) {
 
   if (index > -1) {
     list.splice(index, 1);
-    alert(`Borttagen från ${listName}`);
   } else {
-    // Spara bara det viktigaste för att inte fylla minnet i onödan
     list.push({
       id: movie.id,
       title: movie.title,
@@ -132,29 +129,26 @@ function toggleMovieInList(movie, listName) {
       release_date: movie.release_date,
       vote_average: movie.vote_average
     });
-    alert(`Tillagd i ${listName}`);
   }
 
   localStorage.setItem(listName, JSON.stringify(list));
 }
 
-// --- VISA SPARADE LISTOR ---
+// --- SHOW LISTS ---
 
 function showMyList(listName) {
   const savedMovies = JSON.parse(localStorage.getItem(listName)) || [];
   
-  // Rensa behållaren och sätt en rubrik
-  resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize;">Mina ${listName}</h2>`;
+  resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${listName}</h2>`;
   loadMoreBtn.style.display = "none";
 
   if (savedMovies.length === 0) {
-    resultsContainer.innerHTML += `<p style="grid-column: 1/-1; text-align: center; color: #ccc;">Du har inga filmer här än.</p>`;
+    resultsContainer.innerHTML += `<p style="grid-column: 1/-1; text-align: center; color: #ccc;">Your list is currently empty.</p>`;
     return;
   }
 
   displayMovies(savedMovies);
 }
 
-// Gör funktionen tillgänglig för HTML-knappar
 window.showMyList = showMyList;
 window.loadMore = loadMore;
