@@ -29,14 +29,13 @@
       <i class="fas fa-search"></i>
       <input id="searchInput" type="text" placeholder="Search movies..." autocomplete="off">
     </div>
-    <!-- Ny knapp för att lägga till egen film (dold som standard) -->
-    <button id="addCustomBtn" onclick="openModal()" style="display: none;"><i class="fas fa-plus"></i> Add Custom Movie</button>
+    <button id="addCustomBtn" onclick="openCustomModal()" style="display: none;"><i class="fas fa-plus"></i> Add Custom Movie</button>
   </div>
 
   <!-- MODAL FÖR EGEN FILM -->
   <div id="customMovieModal" class="modal">
     <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
+      <span class="close" onclick="closeCustomModal()">&times;</span>
       <h2>Add Custom Movie</h2>
       <form id="customMovieForm">
         <input type="text" id="customTitle" placeholder="Movie Title (Required)" required>
@@ -44,6 +43,16 @@
         <input type="url" id="customPoster" placeholder="Poster Image URL (Optional)">
         <button type="submit" class="btn-submit">Add to List</button>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL FÖR FILMDETALJER -->
+  <div id="movieDetailsModal" class="modal">
+    <div class="modal-content detail-modal">
+      <span class="close" onclick="closeDetailModal()">&times;</span>
+      <div id="movieDetailsContent">
+        <!-- Innehåll laddas dynamiskt via JS -->
+      </div>
     </div>
   </div>
 
