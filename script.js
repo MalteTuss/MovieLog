@@ -3,7 +3,7 @@ const API_KEY = "d133f3d52325736c0359bfd16cf21ca0";
 let currentPage = 1;
 let currentQuery = "";
 let debounceTimer;
-let currentView = "search";
+let currentView = "search"; // Håller koll på vilken flik vi är på
 
 const searchInput = document.getElementById("searchInput");
 const resultsContainer = document.getElementById("results");
@@ -12,11 +12,9 @@ const loadMoreBtn = document.getElementById("loadMoreBtn");
 // --- NAVIGATION HELPERS ---
 
 function setActiveTab(clickedButton) {
-  // Remove 'active' class from all nav buttons
   document.querySelectorAll('.nav-buttons button').forEach(btn => {
     btn.classList.remove('active');
   });
-  // Add 'active' class to the clicked button
   clickedButton.classList.add('active');
 }
 
@@ -24,6 +22,7 @@ function goHome(button) {
   setActiveTab(button);
   currentView = "search";
   searchInput.value = "";
+  searchInput.placeholder = "Search new movies...";
   resultsContainer.innerHTML = "";
   loadMoreBtn.style.display = "none";
 }
@@ -31,20 +30,23 @@ function goHome(button) {
 // --- EVENT LISTENERS ---
 
 searchInput.addEventListener("input", (e) => {
-  const query = e.target.value.trim();
+  const query = e.target.value.trim().toLowerCase();
   clearTimeout(debounceTimer);
 
   debounceTimer = setTimeout(() => {
-    if (query.length >= 2) {
-      currentQuery = query;
-      currentPage = 1;
-      currentView = "search";
-      // Auto-set the Search tab as active if the user types
-      setActiveTab(document.getElementById('btn-search'));
-      fetchMovies(true);
-    } else if (query.length === 0) {
-      resultsContainer.innerHTML = "";
-      loadMoreBtn.style.display = "none";
+    if (currentView === "search") {
+      // Om vi är på hemfliken: Sök i TMDB API
+      if (query.length >= 2) {
+        currentQuery = query;
+        currentPage = 1;
+        fetchMovies(true);
+      } else if (query.length === 0) {
+        resultsContainer.innerHTML = "";
+        loadMoreBtn.style.display = "none";
+      }
+    } else {
+      // Om vi är på Watched/Watchlist/Favs: Filtrera sparade filmer lokalt
+      filterLocalList(query);
     }
   }, 400);
 });
@@ -95,6 +97,26 @@ async function fetchMovies(isNewSearch = false) {
 function loadMore() {
   currentPage++;
   fetchMovies(false);
+}
+
+// --- LOCAL FILTER FUNCTION ---
+
+function filterLocalList(query) {
+  const savedMovies = JSON.parse(localStorage.getItem(currentView)) || [];
+  
+  // Filtrera listan baserat på titeln
+  const filtered = savedMovies.filter(movie => 
+    movie.title.toLowerCase().includes(query)
+  );
+
+  // Rensa och visa rubrik
+  resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${currentView}</h2>`;
+
+  if (filtered.length === 0) {
+    resultsContainer.innerHTML += `<p style="grid-column: 1/-1; text-align: center; color: #ccc;">No movies found matching "${query}"</p>`;
+  } else {
+    displayMovies(filtered);
+  }
 }
 
 // --- DISPLAY FUNCTIONS ---
@@ -154,6 +176,7 @@ function toggleMovieInList(movie, listName, button, card) {
   if (index > -1) {
     list.splice(index, 1);
     button.classList.remove("active");
+    // Om vi raderar från den vy vi faktiskt tittar på, ta bort kortet direkt
     if (currentView === listName) {
       card.remove();
       if (list.length === 0) {
@@ -178,8 +201,11 @@ function toggleMovieInList(movie, listName, button, card) {
 // --- SHOW LISTS ---
 
 function showMyList(listName, button) {
-  setActiveTab(button); // Highlight the selected tab
+  setActiveTab(button);
   currentView = listName;
+  searchInput.value = ""; // Töm sökrutan när man byter flik
+  searchInput.placeholder = `Search in ${listName}...`;
+  
   const savedMovies = JSON.parse(localStorage.getItem(listName)) || [];
   
   resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${listName}</h2>`;
