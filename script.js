@@ -24,7 +24,7 @@ function goHome(button) {
   currentView = "search";
   searchInput.value = "";
   searchInput.placeholder = "Search new movies...";
-  addCustomBtn.style.display = "none"; // Dölj knappen på sökfliken
+  addCustomBtn.style.display = "none";
   resultsContainer.innerHTML = "";
   loadMoreBtn.style.display = "none";
 }
@@ -51,42 +51,89 @@ searchInput.addEventListener("input", (e) => {
   }, 400);
 });
 
-// --- MODAL LOGIK ---
+// --- MODAL LOGIK (CUSTOM MOVIE) ---
 
-function openModal() {
+function openCustomModal() {
   document.getElementById("customMovieModal").style.display = "block";
 }
 
-function closeModal() {
+function closeCustomModal() {
   document.getElementById("customMovieModal").style.display = "none";
   document.getElementById("customMovieForm").reset();
 }
 
 document.getElementById("customMovieForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  
-  const title = document.getElementById("customTitle").value;
-  const year = document.getElementById("customYear").value || "????";
-  const poster = document.getElementById("customPoster").value || "";
-  
-  const customMovie = {
-    id: "custom-" + Date.now(), // Unikt ID för att inte krocka med TMDB
-    title: title,
-    release_date: year,
-    poster_path: poster, // Vi sparar hela URL:en här för egna filmer
+  const movie = {
+    id: "custom-" + Date.now(),
+    title: document.getElementById("customTitle").value,
+    release_date: document.getElementById("customYear").value || "????",
+    poster_path: document.getElementById("customPoster").value || "",
     vote_average: 0,
-    isCustom: true
+    isCustom: true,
+    overview: "Custom added movie."
   };
-
-  saveCustomMovie(customMovie);
-  closeModal();
+  saveCustomMovie(movie);
+  closeCustomModal();
   showMyList(currentView, document.querySelector(`.nav-buttons button.active`));
 });
 
 function saveCustomMovie(movie) {
   let list = JSON.parse(localStorage.getItem(currentView)) || [];
-  list.unshift(movie); // Lägg till högst upp
+  list.unshift(movie);
   localStorage.setItem(currentView, JSON.stringify(list));
+}
+
+// --- MODAL LOGIK (DETAILS) ---
+
+async function showMovieDetails(movieId, isCustom) {
+  const modal = document.getElementById("movieDetailsModal");
+  const content = document.getElementById("movieDetailsContent");
+  content.innerHTML = "<p style='text-align:center;'>Loading details...</p>";
+  modal.style.display = "block";
+
+  if (isCustom) {
+    // Om det är en egenskapad film, hämta från localStorage
+    const allMovies = JSON.parse(localStorage.getItem(currentView)) || [];
+    const movie = allMovies.find(m => m.id === movieId);
+    renderDetails(movie);
+  } else {
+    // Annars hämta från TMDB API (inklusive skådespelare via append_to_response)
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits`);
+      const movie = await res.json();
+      renderDetails(movie);
+    } catch (err) {
+      content.innerHTML = "<p>Could not load details.</p>";
+    }
+  }
+}
+
+function renderDetails(movie) {
+  const content = document.getElementById("movieDetailsContent");
+  const poster = movie.isCustom ? 
+    (movie.poster_path || "https://dummyimage.com/300x450/1a1a1a/666666&text=No+Image") :
+    `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+
+  const genres = movie.genres ? movie.genres.map(g => g.name).join(", ") : "N/A";
+  const cast = movie.credits ? movie.credits.cast.slice(0, 5).map(c => c.name).join(", ") : "N/A";
+
+  content.innerHTML = `
+    <div class="detail-container">
+      <img src="${poster}" alt="${movie.title}">
+      <div class="detail-info">
+        <h2>${movie.title} (${movie.release_date ? movie.release_date.split("-")[0] : '????'})</h2>
+        <p><strong>Rating:</strong> ★ ${movie.vote_average ? movie.vote_average.toFixed(1) : '?'}</p>
+        <p><strong>Genres:</strong> ${genres}</p>
+        <p><strong>Cast:</strong> ${cast}</p>
+        <p class="overview"><strong>Overview:</strong><br>${movie.overview || "No description available."}</p>
+      </div>
+    </div>
+  `;
+}
+
+function closeDetailModal() {
+  document.getElementById("movieDetailsModal").style.display = "none";
 }
 
 // --- API FUNCTIONS ---
@@ -97,39 +144,16 @@ async function fetchMovies(isNewSearch = false) {
       resultsContainer.innerHTML = "";
       currentPage = 1;
     }
+    const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}&include_adult=true`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    let moviesToDisplay = [];
-    const targetAmount = 20;
-
-    while (moviesToDisplay.length < targetAmount) {
-      const url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(currentQuery)}&page=${currentPage}&include_adult=true`;
-      
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (!data.results || data.results.length === 0) break;
-
+    if (data.results) {
       const filtered = data.results.filter(m => m.poster_path);
-      moviesToDisplay = [...moviesToDisplay, ...filtered];
-
-      if (currentPage >= data.total_pages) {
-        loadMoreBtn.style.display = "none";
-        break;
-      } else {
-        loadMoreBtn.style.display = "block";
-      }
-
-      if (moviesToDisplay.length < targetAmount) {
-        currentPage++;
-      }
+      displayMovies(filtered);
+      loadMoreBtn.style.display = data.total_pages > currentPage ? "block" : "none";
     }
-
-    const finalBatch = moviesToDisplay.slice(0, targetAmount);
-    displayMovies(finalBatch);
-
-  } catch (error) {
-    console.error("Error fetching movies:", error);
-  }
+  } catch (error) { console.error(error); }
 }
 
 function loadMore() {
@@ -141,17 +165,9 @@ function loadMore() {
 
 function filterLocalList(query) {
   const savedMovies = JSON.parse(localStorage.getItem(currentView)) || [];
-  const filtered = savedMovies.filter(movie => 
-    movie.title.toLowerCase().includes(query)
-  );
-
+  const filtered = savedMovies.filter(movie => movie.title.toLowerCase().includes(query));
   resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${currentView}</h2>`;
-
-  if (filtered.length === 0) {
-    resultsContainer.innerHTML += `<p style="grid-column: 1/-1; text-align: center; color: #ccc;">No movies found matching "${query}"</p>`;
-  } else {
-    displayMovies(filtered);
-  }
+  displayMovies(filtered);
 }
 
 // --- DISPLAY FUNCTIONS ---
@@ -165,15 +181,12 @@ function displayMovies(movies) {
   movies.forEach(movie => {
     const card = document.createElement("div");
     card.classList.add("movie");
+    // Gör hela kortet klickbart men bara bilden triggar detaljer för att inte krocka med knappar
+    card.onclick = () => showMovieDetails(movie.id, movie.isCustom);
 
-    let poster;
-    if (movie.isCustom) {
-      poster = movie.poster_path || "https://dummyimage.com/300x450/1a1a1a/666666&text=No+Image";
-    } else {
-      poster = movie.poster_path
-        ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
-        : "https://dummyimage.com/300x450/1a1a1a/666666&text=No+Image";
-    }
+    const poster = movie.isCustom ? 
+      (movie.poster_path || "https://dummyimage.com/300x450/1a1a1a/666666&text=No+Image") :
+      `https://image.tmdb.org/t/p/w342${movie.poster_path}`;
 
     const year = movie.release_date ? movie.release_date.split("-")[0] : "????";
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "?";
@@ -195,6 +208,7 @@ function displayMovies(movies) {
       </div>
     `;
 
+    // Förhindra att detalj-modalen öppnas när man klickar på spara-knapparna
     card.querySelectorAll(".btn-save").forEach(button => {
       button.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -216,52 +230,37 @@ function toggleMovieInList(movie, listName, button, card) {
   if (index > -1) {
     list.splice(index, 1);
     button.classList.remove("active");
-    if (currentView === listName) {
-      card.remove();
-      if (list.length === 0) {
-        resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${listName}</h2>
-                                      <p style="grid-column: 1/-1; text-align: center; color: #ccc;">Your list is currently empty.</p>`;
-      }
-    }
+    if (currentView === listName) card.remove();
   } else {
     list.push(movie);
     button.classList.add("active");
   }
-
   localStorage.setItem(listName, JSON.stringify(list));
 }
-
-// --- SHOW LISTS ---
 
 function showMyList(listName, button) {
   setActiveTab(button);
   currentView = listName;
   searchInput.value = "";
   searchInput.placeholder = `Search in ${listName}...`;
-  
-  // Visa knappen för att lägga till egen film
   addCustomBtn.style.display = "block";
-
-  const savedMovies = JSON.parse(localStorage.getItem(listName)) || [];
-  
   resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${listName}</h2>`;
   loadMoreBtn.style.display = "none";
-
-  if (savedMovies.length === 0) {
-    resultsContainer.innerHTML += `<p style="grid-column: 1/-1; text-align: center; color: #ccc;">Your list is currently empty.</p>`;
-    return;
-  }
-
+  const savedMovies = JSON.parse(localStorage.getItem(listName)) || [];
   displayMovies(savedMovies);
 }
 
+// Stäng modal om man klickar utanför
 window.onclick = function(event) {
-  const modal = document.getElementById("customMovieModal");
-  if (event.target == modal) closeModal();
+  if (event.target.className === "modal") {
+    closeCustomModal();
+    closeDetailModal();
+  }
 }
 
 window.showMyList = showMyList;
 window.loadMore = loadMore;
 window.goHome = goHome;
-window.openModal = openModal;
-window.closeModal = closeModal;
+window.openCustomModal = openCustomModal;
+window.closeCustomModal = closeCustomModal;
+window.closeDetailModal = closeDetailModal;
