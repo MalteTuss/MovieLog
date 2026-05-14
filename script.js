@@ -3,11 +3,12 @@ const API_KEY = "d133f3d52325736c0359bfd16cf21ca0";
 let currentPage = 1;
 let currentQuery = "";
 let debounceTimer;
-let currentView = "search"; // Håller koll på vilken flik vi är på
+let currentView = "search";
 
 const searchInput = document.getElementById("searchInput");
 const resultsContainer = document.getElementById("results");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
+const addCustomBtn = document.getElementById("addCustomBtn");
 
 // --- NAVIGATION HELPERS ---
 
@@ -23,6 +24,7 @@ function goHome(button) {
   currentView = "search";
   searchInput.value = "";
   searchInput.placeholder = "Search new movies...";
+  addCustomBtn.style.display = "none"; // Dölj knappen på sökfliken
   resultsContainer.innerHTML = "";
   loadMoreBtn.style.display = "none";
 }
@@ -35,7 +37,6 @@ searchInput.addEventListener("input", (e) => {
 
   debounceTimer = setTimeout(() => {
     if (currentView === "search") {
-      // Om vi är på hemfliken: Sök i TMDB API
       if (query.length >= 2) {
         currentQuery = query;
         currentPage = 1;
@@ -45,11 +46,48 @@ searchInput.addEventListener("input", (e) => {
         loadMoreBtn.style.display = "none";
       }
     } else {
-      // Om vi är på Watched/Watchlist/Favs: Filtrera sparade filmer lokalt
       filterLocalList(query);
     }
   }, 400);
 });
+
+// --- MODAL LOGIK ---
+
+function openModal() {
+  document.getElementById("customMovieModal").style.display = "block";
+}
+
+function closeModal() {
+  document.getElementById("customMovieModal").style.display = "none";
+  document.getElementById("customMovieForm").reset();
+}
+
+document.getElementById("customMovieForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  
+  const title = document.getElementById("customTitle").value;
+  const year = document.getElementById("customYear").value || "????";
+  const poster = document.getElementById("customPoster").value || "";
+  
+  const customMovie = {
+    id: "custom-" + Date.now(), // Unikt ID för att inte krocka med TMDB
+    title: title,
+    release_date: year,
+    poster_path: poster, // Vi sparar hela URL:en här för egna filmer
+    vote_average: 0,
+    isCustom: true
+  };
+
+  saveCustomMovie(customMovie);
+  closeModal();
+  showMyList(currentView, document.querySelector(`.nav-buttons button.active`));
+});
+
+function saveCustomMovie(movie) {
+  let list = JSON.parse(localStorage.getItem(currentView)) || [];
+  list.unshift(movie); // Lägg till högst upp
+  localStorage.setItem(currentView, JSON.stringify(list));
+}
 
 // --- API FUNCTIONS ---
 
@@ -103,13 +141,10 @@ function loadMore() {
 
 function filterLocalList(query) {
   const savedMovies = JSON.parse(localStorage.getItem(currentView)) || [];
-  
-  // Filtrera listan baserat på titeln
   const filtered = savedMovies.filter(movie => 
     movie.title.toLowerCase().includes(query)
   );
 
-  // Rensa och visa rubrik
   resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${currentView}</h2>`;
 
   if (filtered.length === 0) {
@@ -131,9 +166,14 @@ function displayMovies(movies) {
     const card = document.createElement("div");
     card.classList.add("movie");
 
-    const poster = movie.poster_path
-      ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
-      : "https://dummyimage.com/300x450/1a1a1a/666666&text=No+Image";
+    let poster;
+    if (movie.isCustom) {
+      poster = movie.poster_path || "https://dummyimage.com/300x450/1a1a1a/666666&text=No+Image";
+    } else {
+      poster = movie.poster_path
+        ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
+        : "https://dummyimage.com/300x450/1a1a1a/666666&text=No+Image";
+    }
 
     const year = movie.release_date ? movie.release_date.split("-")[0] : "????";
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "?";
@@ -145,7 +185,7 @@ function displayMovies(movies) {
     card.innerHTML = `
       <img src="${poster}" alt="${movie.title}" loading="lazy">
       <div class="movie-info">
-        <h3>${movie.title}</h3>
+        <h3>${movie.title} ${movie.isCustom ? '<small style="color: #e50914;">(Custom)</small>' : ''}</h3>
         <div class="year">${year} • <span class="rating">★ ${rating}</span></div>
         <div class="actions">
           <button class="btn-save ${watchedClass}" data-type="watched">✅ Watched</button>
@@ -176,7 +216,6 @@ function toggleMovieInList(movie, listName, button, card) {
   if (index > -1) {
     list.splice(index, 1);
     button.classList.remove("active");
-    // Om vi raderar från den vy vi faktiskt tittar på, ta bort kortet direkt
     if (currentView === listName) {
       card.remove();
       if (list.length === 0) {
@@ -185,13 +224,7 @@ function toggleMovieInList(movie, listName, button, card) {
       }
     }
   } else {
-    list.push({
-      id: movie.id,
-      title: movie.title,
-      poster_path: movie.poster_path,
-      release_date: movie.release_date,
-      vote_average: movie.vote_average
-    });
+    list.push(movie);
     button.classList.add("active");
   }
 
@@ -203,9 +236,12 @@ function toggleMovieInList(movie, listName, button, card) {
 function showMyList(listName, button) {
   setActiveTab(button);
   currentView = listName;
-  searchInput.value = ""; // Töm sökrutan när man byter flik
+  searchInput.value = "";
   searchInput.placeholder = `Search in ${listName}...`;
   
+  // Visa knappen för att lägga till egen film
+  addCustomBtn.style.display = "block";
+
   const savedMovies = JSON.parse(localStorage.getItem(listName)) || [];
   
   resultsContainer.innerHTML = `<h2 style="grid-column: 1/-1; text-align: center; color: white; text-transform: capitalize; margin-bottom: 20px;">My ${listName}</h2>`;
@@ -219,6 +255,13 @@ function showMyList(listName, button) {
   displayMovies(savedMovies);
 }
 
+window.onclick = function(event) {
+  const modal = document.getElementById("customMovieModal");
+  if (event.target == modal) closeModal();
+}
+
 window.showMyList = showMyList;
 window.loadMore = loadMore;
 window.goHome = goHome;
+window.openModal = openModal;
+window.closeModal = closeModal;
